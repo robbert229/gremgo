@@ -8,8 +8,8 @@ import (
 
 type GremlinError struct {
 	Attributes interface{} `json:"attributes" omitempty`
-	Code float64 `json:"code"`
-	Message string `json:"message"`
+	Code       float64     `json:"code"`
+	Message    string      `json:"message"`
 }
 
 func (e *GremlinError) Error() string {

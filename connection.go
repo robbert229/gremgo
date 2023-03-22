@@ -41,7 +41,7 @@ type Ws struct {
 	sync.RWMutex
 }
 
-//Auth is the container for authentication data of dialer
+// Auth is the container for authentication data of dialer
 type auth struct {
 	username string
 	password string

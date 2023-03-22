@@ -7,9 +7,9 @@ import (
 // GremlinNetworkError - This returns decorated error with useful information
 type GremlinNetworkError struct {
 	Attributes interface{} `json:"attributes" omitempty`
-	Code int32 `json:"code" omitempty`
-	Message string `json:"message" omitempty`
-	ConnStr string `json:"conn_str omitempty`
+	Code       int32       `json:"code" omitempty`
+	Message    string      `json:"message" omitempty`
+	ConnStr    string      `json:"conn_str omitempty`
 }
 
 func (e GremlinNetworkError) Error() string {
