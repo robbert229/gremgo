@@ -1,11 +1,11 @@
 package gremgo
 
 import (
+	"errors"
 	"io/ioutil"
 	"log"
 	"sync"
 	"time"
-	"errors"
 )
 
 // Client is a container for the gremgo client.
@@ -20,16 +20,15 @@ type Client struct {
 	Errored          bool
 }
 
-
 // NewDialer returns a WebSocket dialer to use when connecting to Gremlin Server
 func NewDialer(host string, configs ...DialerConfig) (dialer *Ws) {
 	dialer = &Ws{
-		timeout: 5 * time.Second,
+		timeout:      5 * time.Second,
 		pingInterval: 60 * time.Second,
-		writingWait: 15 * time.Second,
-		readingWait: 15 * time.Second,
-		connected: false,
-		quit: make(chan struct{}),
+		writingWait:  15 * time.Second,
+		readingWait:  15 * time.Second,
+		connected:    false,
+		quit:         make(chan struct{}),
 	}
 
 	for _, conf := range configs {
@@ -39,7 +38,6 @@ func NewDialer(host string, configs ...DialerConfig) (dialer *Ws) {
 	dialer.host = host
 	return dialer
 }
-
 
 func newClient() (c Client) {
 	c.requests = make(chan []byte, 3)  // c.requests takes any request and delivers it to the WriteWorker for dispatch to Gremlin Server
@@ -72,7 +70,7 @@ func Dial(conn dialer, errs chan error) (c Client, err error) {
 }
 
 func (c *Client) executeRequest(query string, bindings, rebindings map[string]string) (resp interface{}, err error) {
-	req, id, err := prepareRequest(query, bindings, rebindings)
+	req, err := prepareRequest(query, bindings, rebindings)
 	if err != nil {
 		return
 	}
@@ -82,13 +80,13 @@ func (c *Client) executeRequest(query string, bindings, rebindings map[string]st
 		log.Println(err)
 		return
 	}
-	c.responseNotifier.Store(id, make(chan int, 1))
+	c.responseNotifier.Store(req.RequestId, make(chan int, 1))
 	c.dispatchRequest(msg)
-	resp, err = c.retrieveResponse(id)
+	resp, err = c.retrieveResponse(req.RequestId)
 	return
 }
 
-func (c *Client) authenticate(requestId string) (err error){
+func (c *Client) authenticate(requestId string) (err error) {
 	auth := c.conn.getAuth()
 	req, err := prepareAuthRequest(requestId, auth.username, auth.password)
 	if err != nil {
@@ -107,7 +105,7 @@ func (c *Client) authenticate(requestId string) (err error){
 
 // Execute formats a raw Gremlin query, sends it to Gremlin Server, and returns the result.
 func (c *Client) Execute(query string, bindings, rebindings map[string]string) (resp interface{}, err error) {
-	if c.conn.isDisposed(){
+	if c.conn.isDisposed() {
 		return nil, errors.New("you cannot write on disposed connection")
 	}
 	resp, err = c.executeRequest(query, bindings, rebindings)
@@ -116,7 +114,7 @@ func (c *Client) Execute(query string, bindings, rebindings map[string]string) (
 
 // ExecuteFile takes a file path to a Gremlin script, sends it to Gremlin Server, and returns the result.
 func (c *Client) ExecuteFile(path string, bindings, rebindings map[string]string) (resp interface{}, err error) {
-	if c.conn.isDisposed(){
+	if c.conn.isDisposed() {
 		return nil, errors.New("you cannot write on disposed connection")
 	}
 	d, err := ioutil.ReadFile(path) // Read script from file

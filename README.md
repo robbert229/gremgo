@@ -1,19 +1,24 @@
 # gremgo
 
+> This repository is a fork of `github.com/qasaur/gremgo` which is currently unmaintained.
+
 [![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/qasaur/gremgo) [![Build Status](https://travis-ci.org/qasaur/gremgo.svg?branch=master)](https://travis-ci.org/qasaur/gremgo) [![Go Report Card](https://goreportcard.com/badge/github.com/qasaur/gremgo)](https://goreportcard.com/report/github.com/qasaur/gremgo)
 
-gremgo is a fast, efficient, and easy-to-use client for the TinkerPop graph database stack. It is a Gremlin language driver which uses WebSockets to interface with Gremlin Server and has a strong emphasis on concurrency and scalability. Please keep in mind that gremgo is still under heavy development and although effort is being made to fully cover gremgo with reliable tests, bugs may be present in several areas.
+gremgo is a fast, efficient, and easy-to-use client for the TinkerPop graph database stack. It is a Gremlin language 
+driver which uses WebSockets to interface with Gremlin Server and has a strong emphasis on concurrency and scalability.
+Please keep in mind that gremgo is still under heavy development and although effort is being made to fully cover gremgo
+with reliable tests, bugs may be present in several areas.
 
 Installation
 ==========
 ```
-go get github.com/qasaur/gremgo
+go get github.com/robbert229/gremgo
 ```
 
 Documentation
 ==========
 
-* [GoDoc](https://godoc.org/github.com/qasaur/gremgo)
+* [pkg.go.dev](https://pkg.go.dev/github.com/robbert229/gremgo)
 
 Example
 ==========
@@ -24,7 +29,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/qasaur/gremgo"
+	"github.com/robbert229/gremgo"
 )
 
 func main() {
@@ -56,7 +61,7 @@ func main() {
 Authentication
 ==========
 The plugin accepts authentication creating a secure dialer where credentials are setted.
-If the server where are you trying to connect needs authentication and you do not provide the 
+If the server where are you trying to connect needs authentication, and you do not provide the 
 credentials the complement will panic.
 
 ```go
@@ -66,7 +71,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/qasaur/gremgo"
+	"github.com/robbert229/gremgo"
 )
 
 func main() {

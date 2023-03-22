@@ -1,10 +1,9 @@
 package gremgo
 
 import (
-	"encoding/json"
-
-	"github.com/satori/go.uuid"
 	"encoding/base64"
+	"encoding/json"
+	"github.com/gofrs/uuid/v5"
 )
 
 /////
@@ -28,23 +27,26 @@ type request struct {
 /////
 
 // prepareRequest packages a query and binding into the format that Gremlin Server accepts
-func prepareRequest(query string, bindings, rebindings map[string]string) (req request, id string, err error) {
-	id = uuid.NewV4().String()
+func prepareRequest(query string, bindings, rebindings map[string]string) (request, error) {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return request{}, err
+	}
 
-	req.RequestId = id
-	req.Op = "eval"
-	req.Processor = ""
-
-	req.Args = make(map[string]interface{})
-	req.Args["language"] = "gremlin-groovy"
-	req.Args["gremlin"] = query
-	req.Args["bindings"] = bindings
-	req.Args["rebindings"] = rebindings
-
-	return
+	return request{
+		Op:        "eval",
+		Processor: "",
+		RequestId: id.String(),
+		Args: map[string]interface{}{
+			"language":   "gremlin-groovy",
+			"gremlin":    query,
+			"bindings":   bindings,
+			"rebindings": rebindings,
+		},
+	}, nil
 }
 
-//prepareAuthRequest creates a ws request for Gremlin Server
+// prepareAuthRequest creates a ws request for Gremlin Server
 func prepareAuthRequest(requestId string, username string, password string) (req request, err error) {
 	req.RequestId = requestId
 	req.Op = "authentication"

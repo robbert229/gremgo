@@ -11,13 +11,13 @@ func TestRequestPreparation(t *testing.T) {
 	query := "g.V(x)"
 	bindings := map[string]string{"x": "10"}
 	rebindings := map[string]string{}
-	req, id, err := prepareRequest(query, bindings, rebindings)
+	req, err := prepareRequest(query, bindings, rebindings)
 	if err != nil {
 		t.Error(err)
 	}
 
 	expectedRequest := request{
-		RequestId: id,
+		RequestId: req.RequestId,
 		Op:        "eval",
 		Processor: "",
 		Args: map[string]interface{}{
