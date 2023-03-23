@@ -1,6 +1,7 @@
 package gremgo
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 )
 
 type dialer interface {
-	connect() error
+	connect(ctx context.Context) error
 	isConnected() bool
 	isDisposed() bool
 	write([]byte) error
@@ -38,6 +39,7 @@ type Ws struct {
 	readingWait  time.Duration
 	timeout      time.Duration
 	quit         chan struct{}
+	logger       Logger
 	sync.RWMutex
 }
 
@@ -51,13 +53,13 @@ func (ws *Ws) connStr() string {
 	return ws.host
 }
 
-func (ws *Ws) connect() (err error) {
+func (ws *Ws) connect(ctx context.Context) (err error) {
 	d := websocket.Dialer{
 		WriteBufferSize:  524288,
 		ReadBufferSize:   524288,
 		HandshakeTimeout: 5 * time.Second, // Timeout or else we'll hang forever and never fail on bad hosts.
 	}
-	ws.conn, _, err = d.Dial(ws.host, http.Header{})
+	ws.conn, _, err = d.DialContext(ctx, ws.host, http.Header{})
 	if err != nil {
 
 		// As of 3.2.2 the URL has changed.
