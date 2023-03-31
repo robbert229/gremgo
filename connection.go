@@ -53,13 +53,14 @@ func (ws *Ws) connStr() string {
 	return ws.host
 }
 
-func (ws *Ws) connect(ctx context.Context) (err error) {
+func (ws *Ws) connect(ctx context.Context) error {
 	d := websocket.Dialer{
 		WriteBufferSize:  524288,
 		ReadBufferSize:   524288,
 		HandshakeTimeout: 5 * time.Second, // Timeout or else we'll hang forever and never fail on bad hosts.
 	}
-	ws.conn, _, err = d.DialContext(ctx, ws.host, http.Header{})
+
+	conn, _, err := d.DialContext(ctx, ws.host, http.Header{})
 	if err != nil {
 
 		// As of 3.2.2 the URL has changed.
@@ -68,16 +69,20 @@ func (ws *Ws) connect(ctx context.Context) (err error) {
 		ws.conn, _, err = d.Dial(ws.host, http.Header{})
 	}
 
-	if err == nil {
-		ws.connected = true
-		ws.conn.SetPongHandler(func(appData string) error {
-			ws.Lock()
-			ws.connected = true
-			ws.Unlock()
-			return nil
-		})
+	if err != nil {
+		return err
 	}
-	return
+
+	ws.conn = conn
+	ws.connected = true
+	ws.conn.SetPongHandler(func(appData string) error {
+		ws.Lock()
+		ws.connected = true
+		ws.Unlock()
+		return nil
+	})
+
+	return nil
 }
 
 func (ws *Ws) isConnected() bool {
@@ -88,31 +93,31 @@ func (ws *Ws) isDisposed() bool {
 	return ws.disposed
 }
 
-func (ws *Ws) write(msg []byte) (err error) {
-	err = ws.conn.WriteMessage(2, msg)
-	return
+func (ws *Ws) write(msg []byte) error {
+	return ws.conn.WriteMessage(2, msg)
 }
 
-func (ws *Ws) read() (msg []byte, err error) {
-	_, msg, err = ws.conn.ReadMessage()
-	return
+func (ws *Ws) read() ([]byte, error) {
+	_, msg, err := ws.conn.ReadMessage()
+	return msg, err
 }
 
-func (ws *Ws) close() (err error) {
+func (ws *Ws) close() error {
 	defer func() {
 		close(ws.quit)
 		ws.conn.Close()
 		ws.disposed = true
 	}()
 
-	err = ws.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")) //Cleanly close the connection with the server
-	return
+	err := ws.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "")) //Cleanly close the connection with the server
+	return err
 }
 
 func (ws *Ws) getAuth() *auth {
 	if ws.auth == nil {
 		panic("You must create a Secure Dialer for authenticate with the server")
 	}
+
 	return ws.auth
 }
 

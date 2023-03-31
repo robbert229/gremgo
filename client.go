@@ -107,7 +107,7 @@ func (c *Client) executeRequest(ctx context.Context, query string, bindings, reb
 	return resp, nil
 }
 
-func (c *Client) authenticate(requestId string) (error) {
+func (c *Client) authenticate(requestId string) error {
 	auth := c.conn.getAuth()
 	req, err := prepareAuthRequest(requestId, auth.username, auth.password)
 	if err != nil {
@@ -120,7 +120,7 @@ func (c *Client) authenticate(requestId string) (error) {
 		// one logging directly to stdout/stderr here. We could remove it, but
 		// not doing so currently.
 		c.logger.Log("err", err, "msg", "failed to package auth request")
-		
+
 		return fmt.Errorf("failed to package auth request: %w", err)
 	}
 

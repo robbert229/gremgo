@@ -38,19 +38,28 @@ func (c *Client) handleResponse(msg []byte) (err error) {
 }
 
 // marshalResponse creates a response struct for every incoming response for further manipulation
-func marshalResponse(msg []byte) (resp response, err error) {
+func marshalResponse(msg []byte) (response, error) {
 	var j map[string]interface{}
-	err = json.Unmarshal(msg, &j)
 
+	err := json.Unmarshal(msg, &j)
 	if err != nil {
-		return
+		return response{}, err
 	}
 
 	status := j["status"].(map[string]interface{})
 	result := j["result"].(map[string]interface{})
-	gremErr := GremlinError{nil, status["code"].(float64), status["message"].(string)}
 
-	resp.code = int(gremErr.Code)
+	gremErr := GremlinError{
+		Attributes: nil,
+		Code:       status["code"].(float64),
+		Message:    status["message"].(string),
+	}
+
+	resp := response{
+		code:      int(gremErr.Code),
+		requestId: j["requestId"].(string),
+	}
+
 	err = responseDetectError(resp.code)
 	if err != nil {
 		resp.data = err // Modify response vehicle to have error (if exists) as data
@@ -63,8 +72,7 @@ func marshalResponse(msg []byte) (resp response, err error) {
 		err = &gremErr
 	}
 
-	resp.requestId = j["requestId"].(string)
-	return
+	return resp, err
 }
 
 // saveResponse makes the response available for retrieval by the requester. Mutexes are used for thread safety.
